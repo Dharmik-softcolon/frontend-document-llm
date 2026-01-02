@@ -35,7 +35,7 @@ export default function Home() {
                 </div>
 
                 {/* CENTER CHAT */}
-                <div className="col-span-6 flex flex-col bg-bg border-r border-border">
+                <div className="col-span-6 flex flex-col bg-bg border-r border-border min-h-0">
                     <AnswerView messages={messages} loading={loading} />
                     <ChatInput setMessages={setMessages} setLoading={setLoading} loading={loading} />
                 </div>

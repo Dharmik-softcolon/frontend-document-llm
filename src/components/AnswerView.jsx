@@ -1,8 +1,28 @@
+import { useEffect, useRef } from "react";
+
 export default function AnswerView({ messages, loading }) {
+    const messagesEndRef = useRef(null);
+    const scrollContainerRef = useRef(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, loading]);
+
     return (
-        <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
+        <div 
+            ref={scrollContainerRef}
+            className="flex-1 overflow-y-auto px-6 py-8 scroll-smooth"
+            style={{ 
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(148, 163, 184, 0.3) rgba(15, 23, 42, 0.5)'
+            }}
+        >
             {messages.length === 0 && !loading && (
-                <div className="flex flex-col items-center justify-center h-full text-center max-w-2xl mx-auto">
+                <div className="flex flex-col items-center justify-center h-full text-center max-w-2xl mx-auto min-h-[400px]">
                     <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center mb-6">
                         <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -15,7 +35,7 @@ export default function AnswerView({ messages, loading }) {
                 </div>
             )}
 
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="max-w-4xl mx-auto space-y-6 pb-4">
                 {messages.map((msg, i) => (
                     <div
                         key={i}
@@ -32,13 +52,13 @@ export default function AnswerView({ messages, loading }) {
                         )}
                         
                         <div
-                            className={`max-w-[85%] rounded-2xl px-5 py-4 shadow-medium ${
+                            className={`max-w-[85%] rounded-2xl px-5 py-4 shadow-medium break-words ${
                                 msg.role === "user"
                                     ? "bg-gradient-to-br from-primary to-primary-hover text-white rounded-tr-sm"
                                     : "bg-panel text-white border border-border rounded-tl-sm"
                             }`}
                         >
-                            <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
+                            <div className="text-[15px] leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere">
                                 {msg.content}
                             </div>
                         </div>
@@ -72,6 +92,7 @@ export default function AnswerView({ messages, loading }) {
                         </div>
                     </div>
                 )}
+                <div ref={messagesEndRef} />
             </div>
         </div>
     );
