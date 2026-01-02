@@ -64,3 +64,29 @@ input, button, textarea {
 .message-enter {
     animation: slideIn 0.3s ease-out;
 }
+
+/* Format bullet points and lists in messages */
+.formatted-content {
+    line-height: 1.7;
+}
+
+.formatted-content p {
+    margin: 0.5em 0;
+}
+
+.formatted-content ul,
+.formatted-content ol {
+    margin: 0.75em 0;
+    padding-left: 1.5em;
+}
+
+.formatted-content li {
+    margin: 0.4em 0;
+    line-height: 1.6;
+}
+
+/* Ensure proper spacing for lines starting with bullet points */
+.formatted-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}

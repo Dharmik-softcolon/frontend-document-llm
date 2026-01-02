@@ -58,7 +58,7 @@ export default function AnswerView({ messages, loading }) {
                                     : "bg-panel text-white border border-border rounded-tl-sm"
                             }`}
                         >
-                            <div className="text-[15px] leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere">
+                            <div className="text-[15px] leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere formatted-content">
                                 {msg.content}
                             </div>
                         </div>
