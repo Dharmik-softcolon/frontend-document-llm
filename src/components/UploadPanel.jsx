@@ -31,25 +31,53 @@ export default function UploadPanel() {
         if (!file || loading) return;
 
         setLoading(true);
-        setStatus("Uploading & indexing document...");
+        setStatus("Uploading & indexing document... This may take a few minutes for large files.");
 
         const form = new FormData();
         form.append("file", file);
 
         try {
-            await api.post("/upload", form, {
-                headers: { "Content-Type": "multipart/form-data" }
+            const response = await api.post("/upload", form, {
+                headers: { "Content-Type": "multipart/form-data" },
+                timeout: 600000, // 10 minutes timeout for large files with OCR
+                onUploadProgress: (progressEvent) => {
+                    if (progressEvent.total) {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        if (percentCompleted < 100) {
+                            setStatus(`Uploading file... ${percentCompleted}%`);
+                        } else {
+                            setStatus("File uploaded. Processing and indexing... This may take a few minutes.");
+                        }
+                    }
+                }
             });
-            setStatus("success");
-            setFile(null);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
+            
+            if (response.data && response.data.success) {
+                setStatus("success");
+                setFile(null);
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+                // Clear success message after 5 seconds
+                setTimeout(() => setStatus(""), 5000);
+            } else {
+                setStatus("error");
+                setTimeout(() => setStatus(""), 10000);
             }
         } catch (e) {
-            setStatus("error");
+            console.error("Upload error:", e);
+            // Check if it's a timeout error
+            if (e.code === 'ECONNABORTED' || e.message?.includes('timeout')) {
+                setStatus("timeout");
+            } else if (e.response?.data?.message) {
+                // Show backend error message if available
+                setStatus(`error: ${e.response.data.message}`);
+            } else {
+                setStatus("error");
+            }
+            setTimeout(() => setStatus(""), 10000);
         } finally {
             setLoading(false);
-            setTimeout(() => setStatus(""), 5000);
         }
     };
 
@@ -87,7 +115,7 @@ export default function UploadPanel() {
                         type="file"
                         onChange={e => setFile(e.target.files[0])}
                         className="hidden"
-                        accept=".pdf,.doc,.docx,.txt"
+                        accept=".pdf,.csv"
                     />
                     
                     {!file ? (
@@ -99,7 +127,7 @@ export default function UploadPanel() {
                             </div>
                             <p className="text-white font-medium mb-1">Drop your file here</p>
                             <p className="text-sm text-muted mb-2">or click to browse</p>
-                            <p className="text-xs text-muted">Supports PDF, DOC, DOCX, TXT</p>
+                            <p className="text-xs text-muted">Supports PDF (with OCR) and CSV</p>
                         </>
                     ) : (
                         <div className="space-y-3">
@@ -155,7 +183,15 @@ export default function UploadPanel() {
                     <div className={`mt-4 p-3 rounded-xl flex items-center gap-2 ${
                         status === "success" 
                             ? "bg-success/20 text-success border border-success/30" 
-                            : "bg-error/20 text-error border border-error/30"
+                            : status === "timeout"
+                            ? "bg-warning/20 text-warning border border-warning/30"
+                            : status.startsWith("Uploading") || status.includes("Processing") || status.includes("indexing")
+                            ? "bg-primary/20 text-primary border border-primary/30"
+                            : status.startsWith("error:")
+                            ? "bg-error/20 text-error border border-error/30"
+                            : status === "error"
+                            ? "bg-error/20 text-error border border-error/30"
+                            : "bg-primary/20 text-primary border border-primary/30"
                     }`}>
                         {status === "success" ? (
                             <>
@@ -163,6 +199,28 @@ export default function UploadPanel() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span className="text-sm font-medium">Document indexed successfully</span>
+                            </>
+                        ) : status === "timeout" ? (
+                            <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span className="text-sm font-medium">Upload timed out. The file might be processing in the background. Please wait a moment and try again.</span>
+                            </>
+                        ) : status.startsWith("Uploading") || status.includes("Processing") || status.includes("indexing") ? (
+                            <>
+                                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span className="text-sm font-medium">{status}</span>
+                            </>
+                        ) : status.startsWith("error:") ? (
+                            <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                <span className="text-sm font-medium">{status.replace("error: ", "")}</span>
                             </>
                         ) : (
                             <>
