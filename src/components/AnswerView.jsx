@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function AnswerView({ messages, loading }) {
     const messagesEndRef = useRef(null);
     const scrollContainerRef = useRef(null);
+    const [speakingIndex, setSpeakingIndex] = useState(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -11,6 +12,44 @@ export default function AnswerView({ messages, loading }) {
     useEffect(() => {
         scrollToBottom();
     }, [messages, loading]);
+
+    useEffect(() => {
+        // Cleanup: stop speech when component unmounts
+        return () => {
+            window.speechSynthesis.cancel();
+        };
+    }, []);
+
+    const speakText = (text, index) => {
+        // If already speaking this message, stop it
+        if (speakingIndex === index) {
+            window.speechSynthesis.cancel();
+            setSpeakingIndex(null);
+            return;
+        }
+
+        // Stop any ongoing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        
+        utterance.onstart = () => {
+            setSpeakingIndex(index);
+        };
+
+        utterance.onend = () => {
+            setSpeakingIndex(null);
+        };
+
+        utterance.onerror = () => {
+            setSpeakingIndex(null);
+        };
+
+        window.speechSynthesis.speak(utterance);
+    };
 
     return (
         <div 
@@ -58,6 +97,38 @@ export default function AnswerView({ messages, loading }) {
                                     : "bg-panel text-white border border-border rounded-tl-sm"
                             }`}
                         >
+                            {/* Speak button for assistant messages */}
+                            {msg.role === "assistant" && (
+                                <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/30">
+                                    <span className="text-xs text-muted">AI Response</span>
+                                    <button
+                                        onClick={() => speakText(msg.content, i)}
+                                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all ${
+                                            speakingIndex === i
+                                                ? 'bg-primary text-white'
+                                                : 'bg-bg-secondary hover:bg-bg-secondary/70 text-muted hover:text-white border border-border/50'
+                                        }`}
+                                        title={speakingIndex === i ? "Stop speaking" : "Read answer aloud"}
+                                    >
+                                        {speakingIndex === i ? (
+                                            <>
+                                                <svg className="w-3.5 h-3.5 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                                                </svg>
+                                                <span>Stop</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                                                </svg>
+                                                <span>Listen</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            )}
+                            
                             <div className="text-[15px] leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere formatted-content">
                                 {msg.content}
                             </div>
