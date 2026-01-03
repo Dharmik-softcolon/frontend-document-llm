@@ -39,7 +39,7 @@ export default function UploadPanel() {
         try {
             const response = await api.post("/upload", form, {
                 headers: { "Content-Type": "multipart/form-data" },
-                timeout: 600000, // 10 minutes timeout for large files with OCR
+                timeout: 600000,
                 onUploadProgress: (progressEvent) => {
                     if (progressEvent.total) {
                         const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -58,7 +58,6 @@ export default function UploadPanel() {
                 if (fileInputRef.current) {
                     fileInputRef.current.value = '';
                 }
-                // Clear success message after 5 seconds
                 setTimeout(() => setStatus(""), 5000);
             } else {
                 setStatus("error");
@@ -66,11 +65,9 @@ export default function UploadPanel() {
             }
         } catch (e) {
             console.error("Upload error:", e);
-            // Check if it's a timeout error
             if (e.code === 'ECONNABORTED' || e.message?.includes('timeout')) {
                 setStatus("timeout");
             } else if (e.response?.data?.message) {
-                // Show backend error message if available
                 setStatus(`error: ${e.response.data.message}`);
             } else {
                 setStatus("error");
@@ -86,7 +83,7 @@ export default function UploadPanel() {
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        return `${Math.round(bytes / Math.pow(k, i) * 100) / 100} ${sizes[i]}`;
     };
 
     return (
@@ -113,7 +110,7 @@ export default function UploadPanel() {
                     <input
                         ref={fileInputRef}
                         type="file"
-                        onChange={e => setFile(e.target.files[0])}
+                        onChange={({ target: { files } }) => setFile(files[0])}
                         className="hidden"
                         accept=".pdf,.csv"
                     />
@@ -142,12 +139,12 @@ export default function UploadPanel() {
                             </div>
                             <button
                                 onClick={(e) => {
-                                    e.stopPropagation();
-                                    setFile(null);
-                                    if (fileInputRef.current) {
-                                        fileInputRef.current.value = '';
-                                    }
-                                }}
+                                e.stopPropagation();
+                                setFile(null);
+                                if (fileInputRef.current) {
+                                    fileInputRef.current.value = '';
+                                }
+                            }}
                                 className="text-xs text-muted hover:text-white transition-colors"
                             >
                                 Remove

@@ -8,7 +8,6 @@ export default function ChatInput({ setMessages, setLoading, loading }) {
     useEffect(() => {
         const textarea = textareaRef.current;
         if (textarea) {
-            // Reset height to auto to get accurate scrollHeight
             textarea.style.height = 'auto';
             const scrollHeight = textarea.scrollHeight;
             
@@ -56,9 +55,9 @@ export default function ChatInput({ setMessages, setLoading, loading }) {
         }
     };
 
-    const handleChange = (e) => {
+    const handleChange = ({ target: { value } }) => {
         try {
-            setQuestion(e.target.value);
+            setQuestion(value);
         } catch (error) {
             console.error('Error updating question:', error);
         }

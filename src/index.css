@@ -17,7 +17,6 @@ input, button, textarea {
     outline: none;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -38,18 +37,15 @@ input, button, textarea {
     background: rgba(148, 163, 184, 0.6);
 }
 
-/* Firefox scrollbar */
 * {
     scrollbar-width: thin;
     scrollbar-color: rgba(148, 163, 184, 0.4) rgba(15, 23, 42, 0.3);
 }
 
-/* Smooth transitions */
 * {
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-/* Message animation */
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -65,7 +61,6 @@ input, button, textarea {
     animation: slideIn 0.3s ease-out;
 }
 
-/* Format bullet points and lists in messages */
 .formatted-content {
     line-height: 1.7;
 }
@@ -85,7 +80,6 @@ input, button, textarea {
     line-height: 1.6;
 }
 
-/* Ensure proper spacing for lines starting with bullet points */
 .formatted-content {
     white-space: pre-wrap;
     word-wrap: break-word;

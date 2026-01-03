@@ -10,7 +10,6 @@ export default function Home() {
 
     return (
         <div className="h-screen flex flex-col bg-bg overflow-hidden">
-            {/* Header */}
             <header className="bg-panel border-b border-border px-6 py-4 flex items-center justify-between shadow-soft">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center shadow-medium">
@@ -25,22 +24,18 @@ export default function Home() {
                 </div>
             </header>
 
-            {/* Main Content */}
             <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
-                {/* LEFT SIDEBAR */}
                 <div className="col-span-3 border-r border-border bg-panel">
                     <QuestionList
                         history={messages.filter(m => m.role === "user").map(m => m.content)}
                     />
                 </div>
 
-                {/* CENTER CHAT */}
                 <div className="col-span-6 flex flex-col bg-bg border-r border-border min-h-0">
                     <AnswerView messages={messages} loading={loading} />
                     <ChatInput setMessages={setMessages} setLoading={setLoading} loading={loading} />
                 </div>
 
-                {/* RIGHT SIDEBAR */}
                 <div className="col-span-3 bg-panel">
                     <UploadPanel />
                 </div>
