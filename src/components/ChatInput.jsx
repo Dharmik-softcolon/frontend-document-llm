@@ -59,7 +59,12 @@ export default function ChatInput({ setMessages, setLoading, loading }) {
 
             setMessages(prev => [
                 ...prev,
-                { role: "assistant", content: res.data.answer }
+                { 
+                    role: "assistant", 
+                    content: res.data.answer,
+                    sources: res.data.sources || [],
+                    hasTabularData: res.data.hasTabularData || false
+                }
             ]);
 
             // Speak the answer only if TTS is enabled
