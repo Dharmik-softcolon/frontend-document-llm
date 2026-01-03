@@ -23,6 +23,13 @@ export default function UploadPanel() {
         setIsDragging(false);
         const droppedFile = e.dataTransfer.files[0];
         if (droppedFile) {
+            const name = (droppedFile.name || "").toLowerCase();
+            const isPdf = name.endsWith(".pdf") || (droppedFile.type || "").toLowerCase() === "application/pdf";
+            if (!isPdf) {
+                setStatus("error: Only PDF files are supported");
+                setTimeout(() => setStatus(""), 10000);
+                return;
+            }
             setFile(droppedFile);
         }
     };
@@ -110,9 +117,20 @@ export default function UploadPanel() {
                     <input
                         ref={fileInputRef}
                         type="file"
-                        onChange={({ target: { files } }) => setFile(files[0])}
+                        onChange={({ target: { files } }) => {
+                            const selected = files?.[0];
+                            if (!selected) return;
+                            const name = (selected.name || "").toLowerCase();
+                            const isPdf = name.endsWith(".pdf") || (selected.type || "").toLowerCase() === "application/pdf";
+                            if (!isPdf) {
+                                setStatus("error: Only PDF files are supported");
+                                setTimeout(() => setStatus(""), 10000);
+                                return;
+                            }
+                            setFile(selected);
+                        }}
                         className="hidden"
-                        accept=".pdf,.csv"
+                        accept=".pdf"
                     />
                     
                     {!file ? (
@@ -124,7 +142,7 @@ export default function UploadPanel() {
                             </div>
                             <p className="text-white font-medium mb-1">Drop your file here</p>
                             <p className="text-sm text-muted mb-2">or click to browse</p>
-                            <p className="text-xs text-muted">Supports PDF (with OCR) and CSV</p>
+                            <p className="text-xs text-muted">Supports PDF (with OCR)</p>
                         </>
                     ) : (
                         <div className="space-y-3">
